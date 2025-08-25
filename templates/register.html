@@ -106,6 +106,29 @@
             border-left: 3px solid #dc3545;
         }
 
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
         .submit-btn {
             width: 100%;
             padding: 15px;
@@ -228,59 +251,70 @@
             <p>Join our community today</p>
         </div>
 
+        <!-- Flash messages display -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
         <form method="POST">
-            <!-- Hidden CSRF token field (Flask-WTF) -->
-            <!-- {{ form.hidden_tag() }} -->
+            <!-- CSRF token - ESSENTIAL for Flask-WTF -->
+            {{ form.hidden_tag() }}
 
             <div class="form-group">
                 <label for="username">Username</label>
                 <div class="input-wrapper">
-                    <input type="text" id="username" name="username" size="32" required>
+                    {{ form.username(class="form-control", id="username", required=true) }}
                 </div>
                 <!-- Error display for username -->
-                <!-- {% for error in form.username.errors %}
+                {% for error in form.username.errors %}
                 <div class="error-message">{{ error }}</div>
-                {% endfor %} -->
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <div class="input-wrapper">
-                    <input type="email" id="email" name="email" size="32" required>
+                    {{ form.email(class="form-control", id="email", required=true) }}
                 </div>
                 <!-- Error display for email -->
-                <!-- {% for error in form.email.errors %}
+                {% for error in form.email.errors %}
                 <div class="error-message">{{ error }}</div>
-                {% endfor %} -->
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
                 <div class="input-wrapper">
-                    <input type="password" id="password" name="password" size="32" required>
+                    {{ form.password(class="form-control", id="password", required=true) }}
                 </div>
                 <!-- Error display for password -->
-                <!-- {% for error in form.password.errors %}
+                {% for error in form.password.errors %}
                 <div class="error-message">{{ error }}</div>
-                {% endfor %} -->
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label for="confirm_password">Confirm Password</label>
                 <div class="input-wrapper">
-                    <input type="password" id="confirm_password" name="confirm_password" size="32" required>
+                    {{ form.confirm_password(class="form-control", id="confirm_password", required=true) }}
                 </div>
                 <!-- Error display for confirm_password -->
-                <!-- {% for error in form.confirm_password.errors %}
+                {% for error in form.confirm_password.errors %}
                 <div class="error-message">{{ error }}</div>
-                {% endfor %} -->
+                {% endfor %}
             </div>
 
-            <button type="submit" class="submit-btn">Create Account</button>
+            {{ form.submit(class="submit-btn") }}
         </form>
 
         <div class="back-link">
-            <a href="/">← Back to Home</a>
+            <a href="{{ url_for('home') }}">← Back to Home</a>
         </div>
     </div>
 
@@ -294,17 +328,6 @@
             input.addEventListener('blur', function () {
                 this.parentElement.style.transform = 'scale(1)';
             });
-        });
-
-        // Form validation feedback
-        document.querySelector('form').addEventListener('submit', function (e) {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-
-            if (password !== confirmPassword) {
-                e.preventDefault();
-                alert('Passwords do not match!');
-            }
         });
     </script>
 </body>

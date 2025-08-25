@@ -29,7 +29,8 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"<User {self.username}>"
-    
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -46,6 +47,7 @@ class Post(db.Model):
         return f"<Post {self.title}>"
 
 
+# Fix the typo in your email validation method
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[
                            DataRequired(), Length(min=2, max=150)])
@@ -64,7 +66,13 @@ class RegistrationForm(FlaskForm):
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user:
-            raise ValidationError("Email alreaddy Exists!")
+            raise ValidationError("Email already exists!")
+
+
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Log In')
 
 
 @app.route("/")
@@ -81,17 +89,35 @@ def register():
     if form.validate_on_submit():
         hashed_password = generate_password_hash(form.password.data)
         new_user = User(username=form.username.data,
-                        email=form.email.data, password_hash=hashed_password)
+                        email=form.email.data,
+                        password_hash=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        flash('Account Created Successfully! You can now log in.', 'success')
+
+        flash(
+            f'Registration completed successfully for {form.username.data}! Please log in with your credentials.', 'success')
         return redirect(url_for('login'))
+
     return render_template('register.html', form=form)
 
 
-@app.route("/login",methods=['GET','POST'])
+@app.route("/login", methods=['GET', 'POST'])
 def login():
-    return render_template("login.html")
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and check_password_hash(user.password_hash, form.password.data):
+            login_user(user)
+            flash('Login successful!', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Login failed. Please check email and password.', 'danger')
+
+    return render_template('login.html', form=form)
+
 
 if __name__ == "__main__":
     with app.app_context():
