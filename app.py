@@ -119,24 +119,6 @@ def login():
     return render_template('login.html', form=form)
 
 
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user and check_password_hash(user.password_hash, form.password.data):
-            login_user(user)
-            flash('Login successful!', 'success')
-            return redirect(url_for('home'))
-        else:
-            flash('Login failed. Please check email and password.', 'danger')
-
-    return render_template('login.html', form=form)
-
-
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
